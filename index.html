@@ -165,21 +165,22 @@ const $=id=>document.getElementById(id),scr=$('scr'),root=document.body;
 let bz=1,bx=0,by=0,bimg=null;
 try{const o=JSON.parse(localStorage.getItem('bg')||'null');if(o){bz=+o.z||1;bx=+o.x||0;by=+o.y||0}}catch(_){}
 function saveBg(){try{localStorage.setItem('bg',JSON.stringify({z:bz,x:bx,y:by}))}catch(_){}}
-function resetBg(){bz=1;bx=0;by=0;if(bimg){const v=vp(),s0=Math.max(v.w/bimg.w,H/bimg.h);bx=(v.w-bimg.w*s0)/2;by=(H-bimg.h*s0)/2}}
+function resetBg(){bz=1;bx=0;by=0;if(bimg){const v=vp(),s0=Math.max(v.w/bimg.w,v.h/bimg.h);bx=(v.w-bimg.w*s0)/2;by=(v.h-bimg.h*s0)/2}}
 function paintCanvas(){const h=document.documentElement;
   if(!root.classList.contains('shoot')){h.style.backgroundColor=h.style.backgroundImage=h.style.backgroundSize=h.style.backgroundRepeat=h.style.backgroundPosition='';return}
   const w=$('wall'),c=getComputedStyle(w),v=vp();
   h.style.backgroundColor=c.backgroundColor;
   h.style.backgroundImage='linear-gradient(rgba(0,0,0,.34),rgba(0,0,0,.34)),'+c.backgroundImage;
   let size;
-  if(bimg&&w.style.backgroundImage.indexOf('url')>-1){const s1=Math.max(v.w/bimg.w,H/bimg.h)*bz;size=(bimg.w*s1)+'px '+(bimg.h*s1)+'px'}
-  else size=(v.w*bz)+'px '+(H*bz)+'px';
+  if(bimg&&w.style.backgroundImage.indexOf('url')>-1){const s1=Math.max(v.w/bimg.w,v.h/bimg.h)*bz;size=(bimg.w*s1)+'px '+(bimg.h*s1)+'px'}
+  else size=(v.w*bz)+'px '+(v.h*bz)+'px';
   h.style.backgroundSize=size;h.style.backgroundRepeat='no-repeat';h.style.backgroundPosition=bx+'px '+by+'px'}
 function vp(){const sa=(navigator.standalone===true)||(window.matchMedia&&matchMedia('(display-mode: standalone)').matches);
   return sa?{w:Math.min(screen.width,screen.height),h:Math.max(screen.width,screen.height)}:{w:innerWidth,h:innerHeight}}
 function fit(){
   const shoot=root.classList.contains('shoot');
   const v=vp(),st=$('stage');if(shoot){st.style.left='0';st.style.top='0';st.style.width=v.w+'px';st.style.height=v.h+'px'}else{st.style.width=st.style.height=st.style.left=st.style.top=''}
+  const de=document.documentElement;if(shoot){de.style.height=v.h+'px';de.style.bottom='auto'}else{de.style.height='';de.style.bottom=''}
   K=shoot?Math.min(v.w/W,v.h/H):Math.max(.35,Math.min(1,(innerWidth-40)/W,(innerHeight-250)/H));
   $('fit').style.transform='translateY('+(shoot?offY:0)+'px)';$('fit').style.width=W*K+'px';$('fit').style.height=H*K+'px';$('scale').style.transform='scale('+K+')';
 }
