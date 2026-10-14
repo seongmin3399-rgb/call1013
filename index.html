@@ -128,6 +128,7 @@ input[type=text]{font:inherit;font-size:16px;color:var(--ink);background:var(--p
 <label>위치 보정(pt, 촬영 모드에서 아래로)<input type="text" id="inY" value="0" inputmode="numeric"></label>
 <label class="file" style="color:var(--ink)">배경 이미지 올리기<input type="file" id="inImg" accept="image/*"></label>
 <button id="bBlur" aria-pressed="true">배경 블러</button>
+<label>하단 페이드(pt, 띠 가리기)<input type="text" id="inFade" value="140" inputmode="numeric"></label>
 <button id="bBgReset">배경 위치 초기화</button>
 <button id="bShoot">촬영 모드</button>
 </div>
@@ -162,14 +163,17 @@ input[type=text]{font:inherit;font-size:16px;color:var(--ink);background:var(--p
 const W=390,H=844;let K=1,offY=0;
 try{offY=parseFloat(localStorage.getItem('offY'))||0}catch(_){}
 const $=id=>document.getElementById(id),scr=$('scr'),root=document.body;
-let bz=1,bx=0,by=0,bimg=null;
+let bz=1,bx=0,by=0,bimg=null,fade=140;
+try{const f=localStorage.getItem('fade');if(f!==null&&!isNaN(parseFloat(f)))fade=parseFloat(f)}catch(_){}
 try{const o=JSON.parse(localStorage.getItem('bg')||'null');if(o){bz=+o.z||1;bx=+o.x||0;by=+o.y||0}}catch(_){}
 function saveBg(){try{localStorage.setItem('bg',JSON.stringify({z:bz,x:bx,y:by}))}catch(_){}}
 function resetBg(){bz=1;bx=0;by=0;if(bimg){const v=vp(),s0=Math.max(v.w/bimg.w,v.h/bimg.h);bx=(v.w-bimg.w*s0)/2;by=(v.h-bimg.h*s0)/2}}
 function paintCanvas(){const h=document.documentElement;
-  if(!root.classList.contains('shoot')){h.style.backgroundColor=h.style.backgroundImage=h.style.backgroundSize=h.style.backgroundRepeat=h.style.backgroundPosition='';return}
+  if(!root.classList.contains('shoot')){h.style.backgroundColor=h.style.backgroundImage=h.style.backgroundSize=h.style.backgroundRepeat=h.style.backgroundPosition='';document.body.style.backgroundImage='';return}
   const w=$('wall'),c=getComputedStyle(w),v=vp();
-  h.style.backgroundColor=c.backgroundColor;
+  const m=(c.backgroundColor.match(/\d+/g)||[0,0,0]).slice(0,3).map(n=>Math.round(n*0.66)),D='rgb('+m.join(',')+')';
+  h.style.backgroundColor=D;
+  document.body.style.backgroundImage=fade>0?'linear-gradient(to bottom, rgba('+m.join(',')+',0) calc(100% - '+fade+'px), '+D+' 100%)':'';
   h.style.backgroundImage='linear-gradient(rgba(0,0,0,.34),rgba(0,0,0,.34)),'+c.backgroundImage;
   let size;
   if(bimg&&w.style.backgroundImage.indexOf('url')>-1){const s1=Math.max(v.w/bimg.w,v.h/bimg.h)*bz;size=(bimg.w*s1)+'px '+(bimg.h*s1)+'px'}
@@ -206,6 +210,7 @@ function shoot(on){if(on)window.scrollTo(0,0);root.classList.toggle('shoot',on);
 $('inY').value=offY;$('inY').addEventListener('input',e=>{offY=parseFloat(e.target.value)||0;try{localStorage.setItem('offY',offY)}catch(_){};fit()});
 if(window.visualViewport){visualViewport.addEventListener('resize',fit)}
 addEventListener('orientationchange',()=>setTimeout(fit,200));
+$('inFade').value=fade;$('inFade').addEventListener('input',e=>{const v=parseFloat(e.target.value);fade=isNaN(v)?0:Math.max(0,v);try{localStorage.setItem('fade',fade)}catch(_){};paintCanvas()});
 $('bBgReset').onclick=()=>{resetBg();saveBg();paintCanvas()};
 (function(){const st=$('stage'),pts=new Map();let pd=null;
  const info=()=>{const a=[...pts.values()];return a.length<2?null:{d:Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y),cx:(a[0].x+a[1].x)/2,cy:(a[0].y+a[1].y)/2}};
