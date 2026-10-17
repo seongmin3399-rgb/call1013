@@ -14,7 +14,7 @@
 :root[data-theme="dark"]{--bg:#15161a;--ink:#ececf0;--mute:#9a9da8;--panel:#202228;--line:#33363f;--acc:#6b9bff}
 html,body{overscroll-behavior:none}
 body{touch-action:manipulation;-webkit-text-size-adjust:100%}
-#sig{position:absolute;z-index:6;left:285px;top:24px;width:19px;height:auto;display:block;pointer-events:none}
+#sig{position:absolute;z-index:6;left:285px;top:20px;width:19px;height:auto;display:block;pointer-events:none}
 .nosig #sig{display:none}
 .sigblack #sig{filter:brightness(0)}
 #toast{display:none;position:fixed;left:16px;right:16px;bottom:24px;z-index:99;background:#222;color:#fff;border-radius:10px;padding:12px 14px;font-size:14px;line-height:1.5;text-align:center}
@@ -69,6 +69,8 @@ input[type=text]{font:inherit;font-size:16px;color:var(--ink);background:var(--p
 .who .n{font-size:34px;font-weight:600;line-height:40px;letter-spacing:-.2px}
 .who .s{font-size:16px;opacity:.9;margin-top:6px}
 .who .s:empty{display:none}
+.unk .who{display:flex;flex-direction:column-reverse;align-items:center}
+.unk .who .s{font-size:19px;line-height:22px;opacity:.6;margin:0 0 6px}
 [data-state="call"] .who{top:138px}
 .timer{display:none;position:absolute;top:110px;left:0;right:0;text-align:center;z-index:3;font-size:22px;font-weight:600;line-height:26px;color:rgba(255,255,255,.55);font-variant-numeric:tabular-nums}
 .c{display:flex;flex-direction:column;align-items:center;font-size:14px;white-space:nowrap}
@@ -123,6 +125,7 @@ input[type=text]{font:inherit;font-size:16px;color:var(--ink);background:var(--p
 <div class="grp"><button id="mBtn" aria-pressed="false">버튼형</button><button id="mSlide" aria-pressed="true">밀어서 통화하기</button></div>
 <label>발신자 이름<input type="text" id="inName" value="엄마"></label>
 <label>보조 문구<input type="text" id="inSub" value=""></label>
+<button id="bUnk" aria-pressed="false">모르는 번호</button>
 <label>시간<input type="text" id="inTime" value="1:57"></label>
 <label>통신<input type="text" id="inNet" value="5G"></label>
 <label>배터리(%)<input type="text" id="inBat" value="80" inputmode="numeric"></label>
@@ -130,7 +133,7 @@ input[type=text]{font:inherit;font-size:16px;color:var(--ink);background:var(--p
 <button id="bSig" aria-pressed="true">신호 막대 사진</button>
 <button id="bSigC" aria-pressed="false">막대 검정색</button>
 <label>막대 가로(pt)<input type="text" id="sigX" value="285" inputmode="numeric"></label>
-<label>막대 세로(pt)<input type="text" id="sigY" value="24" inputmode="numeric"></label>
+<label>막대 세로(pt)<input type="text" id="sigY" value="20" inputmode="numeric"></label>
 <label>막대 크기(pt)<input type="text" id="sigW" value="19" inputmode="numeric"></label>
 <label>하단 페이드(pt, 띠 가리기)<input type="text" id="inFade" value="140" inputmode="numeric"></label>
 <button id="bShoot">촬영 모드</button>
@@ -191,6 +194,10 @@ addEventListener('resize',fit);
 function bind(id,sel){$(id).addEventListener('input',e=>scr.querySelector(sel).textContent=e.target.value)}
 bind('inName','.who .n');bind('inSub','.who .s');bind('inTime','.status .t');bind('inNet','.net');
 function pick(a,b,fn){[a,b].forEach(x=>$(x).onclick=()=>{fn(x);[a,b].forEach(y=>$(y).setAttribute('aria-pressed',y===x))})}
+let prevSub='';
+$('bUnk').onclick=()=>{const on=!scr.classList.contains('unk'),inp=$('inSub');scr.classList.toggle('unk',on);
+  if(on){prevSub=inp.value;inp.value='대한민국'}else{inp.value=prevSub}
+  scr.querySelector('.who .s').textContent=inp.value;$('bUnk').setAttribute('aria-pressed',on)};
 $('inBat').addEventListener('input',e=>{const v=Math.max(0,Math.min(100,parseInt(e.target.value,10)||0));const b=scr.querySelector('.batt');b.querySelector('b').style.width=v+'%';b.classList.toggle('low',v<=20)});
 $('bBar').onclick=()=>{const off=scr.classList.toggle('nobar');$('bBar').setAttribute('aria-pressed',!off)};
 pick('d13','d13pro',x=>{scr.dataset.dev=x==='d13'?'13':'13pro';paintCanvas();if(window.applySig)window.applySig()});
@@ -208,14 +215,14 @@ if(window.visualViewport){visualViewport.addEventListener('resize',fit)}
 addEventListener('orientationchange',()=>setTimeout(fit,200));
 $('inFade').value=fade;$('inFade').addEventListener('input',e=>{const v=parseFloat(e.target.value);fade=isNaN(v)?0:Math.max(0,v);try{localStorage.setItem('fade',fade)}catch(_){};paintCanvas()});
 (function(){const img=$('sig');
- const def={'13':{x:285,y:24,w:19,c:0},'13pro':{x:285,y:24,w:19.7,c:1}};let on=true,all={'13':Object.assign({},def['13']),'13pro':Object.assign({},def['13pro'])};
- try{const j=JSON.parse(localStorage.getItem('sig2')||'null');if(j){on=j.on!==false;['13','13pro'].forEach(k=>{if(j[k])Object.assign(all[k],j[k])})}}catch(_){}
+ const def={'13':{x:285,y:20,w:19,c:0},'13pro':{x:285,y:20,w:19.7,c:1}};let on=true,all={'13':Object.assign({},def['13']),'13pro':Object.assign({},def['13pro'])};
+ try{const j=JSON.parse(localStorage.getItem('sig3')||'null');if(j){on=j.on!==false;['13','13pro'].forEach(k=>{if(j[k])Object.assign(all[k],j[k])})}}catch(_){}
  const cur=()=>all[scr.dataset.dev]||all['13'];
  function apply(){const o=cur();img.style.left=o.x+'px';img.style.top=o.y+'px';img.style.width=o.w+'px';
   scr.classList.toggle('nosig',!on);scr.classList.toggle('sigblack',!!o.c);
   $('bSig').setAttribute('aria-pressed',on);$('bSigC').setAttribute('aria-pressed',!!o.c);
   $('sigX').value=o.x;$('sigY').value=o.y;$('sigW').value=o.w;
-  try{localStorage.setItem('sig2',JSON.stringify({on:on,'13':all['13'],'13pro':all['13pro']}))}catch(_){}}
+  try{localStorage.setItem('sig3',JSON.stringify({on:on,'13':all['13'],'13pro':all['13pro']}))}catch(_){}}
  [['sigX','x'],['sigY','y'],['sigW','w']].forEach(([id,k])=>$(id).addEventListener('input',e=>{const v=parseFloat(e.target.value);if(!isNaN(v)){cur()[k]=v;apply()}}));
  $('bSig').onclick=()=>{on=!on;apply()};$('bSigC').onclick=()=>{cur().c=cur().c?0:1;apply()};
  window.applySig=apply;apply()})();
